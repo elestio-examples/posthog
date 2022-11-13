@@ -31,10 +31,10 @@ services:
             - kafka
             - zookeeper
         volumes:
-            - ./posthog/posthog/idl:/idl
-            - ./posthog:/docker-entrypoint-initdb.d
-            - ./posthog:/etc/clickhouse-server/config.xml
-            - ./posthog:/etc/clickhouse-server/users.xml
+            # - ./posthog/posthog/idl:/idl
+            # - ./posthog/docker/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+            # - ./posthog/docker/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+            # - ./posthog/docker/clickhouse/users.xml:/etc/clickhouse-server/users.xml
             - ./clickhouse-data:/var/lib/clickhouse
     zookeeper:
         image: zookeeper:3.7.0
