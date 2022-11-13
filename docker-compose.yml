@@ -61,7 +61,7 @@ services:
         command: ./bin/docker-worker-celery --with-scheduler
         restart: always
         environment:
-            SENTRY_DSN: $SENTRY_DSN
+            # SENTRY_DSN: $SENTRY_DSN
             SITE_URL: https://${DOMAIN}
             DISABLE_SECURE_SSL_REDIRECT: 'true'
             IS_BEHIND_PROXY: 'true'
