@@ -22,6 +22,6 @@ mkdir -p ./compose
 mkdir -p ./object_storage
 # chown -R 1000:1000 ./object_storage
 
-mkdir -p ./posthog
-# chown -R 1000:1000 ./posthog
+mkdir -p ./clickhouse-data
+# chown -R 1000:1000 ./clickhouse-data
 
