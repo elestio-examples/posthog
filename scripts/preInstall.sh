@@ -2,26 +2,26 @@
 #set -o allexport; source .env; set +o allexport;
 
 mkdir -p ./postgres-data
-chown -R 1001:1001 ./postgres-data
+chown -R 999:999 ./postgres-data
 
 mkdir -p ./posthog
-chown -R 1001:1001 ./posthog
+chown -R 999:999 ./posthog
 
 mkdir -p ./zookeeper-datalog
-chown -R 1001:1001 ./zookeeper-datalog
+chown -R 999:999 ./zookeeper-datalog
 
 mkdir -p ./zookeeper-data
-chown -R 1001:1001 ./zookeeper-data
+chown -R 999:999 ./zookeeper-data
 
 mkdir -p ./zookeeper-logs
-chown -R 1001:1001 ./zookeeper-logs
+chown -R 999:999 ./zookeeper-logs
 
 mkdir -p ./compose
-chown -R 1001:1001 ./compose
+chown -R 999:999 ./compose
 
 mkdir -p ./object_storage
-chown -R 1001:1001 ./object_storage
+chown -R 999:999 ./object_storage
 
 mkdir -p ./clickhouse-data
-chown -R 1001:1001 ./clickhouse-data
+chown -R 999:999 ./clickhouse-data
 
