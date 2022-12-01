@@ -33,8 +33,8 @@ services:
         volumes:
             - ./posthog:/idl
             - ./posthog:/docker-entrypoint-initdb.d
-            - ./posthog:/etc/clickhouse-server/config.xml
-            - ./posthog:/etc/clickhouse-server/users.xml
+            - ./posthog:/etc/clickhouse-server
+            # - ./posthog:/etc/clickhouse-server/users.xml
             - ./clickhouse-data:/var/lib/clickhouse
     zookeeper:
         image: zookeeper:3.7.0
