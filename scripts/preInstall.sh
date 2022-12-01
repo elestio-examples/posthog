@@ -4,7 +4,7 @@
 mkdir -p ./postgres-data
 # chown -R 999:999 ./postgres-data
 
-# mkdir -p ./posthog
+mkdir -p ./posthog
 # chown -R 999:999 ./posthog
 
 mkdir -p ./zookeeper-datalog
@@ -23,5 +23,8 @@ mkdir -p ./object_storage
 # chown -R 999:999 ./object_storage
 
 mkdir -p ./clickhouse-data
+# chown -R 999:999 ./clickhouse-data
+
+mkdir -p ./idl
 # chown -R 999:999 ./clickhouse-data
 
