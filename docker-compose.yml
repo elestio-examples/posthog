@@ -90,7 +90,7 @@ services:
         ports:
             - 172.17.0.1:8000:8000
         volumes:
-            - ./compose:/compose
+            - ./bin:/compose
     # caddy:
     #     image: caddy:2.6.1
     #     restart: unless-stopped
