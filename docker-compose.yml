@@ -219,10 +219,10 @@ services:
         image: posthog/posthog:latest
     web:
         <<: *worker
-        command: /compose/start
-        restart: on-failure
+        command: /bin/start
+        restart: always
         volumes:
-            - ./compose:/compose
+            - ./bin:/compose
         image: posthog/posthog:latest
         environment:
             SENTRY_DSN: $SENTRY_DSN
@@ -230,7 +230,7 @@ services:
             SECRET_KEY: $POSTHOG_SERET
     plugins:
         command: ./bin/plugin-server --no-restart-loop
-        restart: on-failure
+        restart: always
         environment:
             DATABASE_URL: 'postgres://posthog:posthog@db:5432/posthog'
             KAFKA_HOSTS: 'kafka:9092'
