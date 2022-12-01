@@ -265,14 +265,14 @@ services:
         volumes:
             - ./object_storage:/data
 
-    asyncmigrationscheck:
-        <<: *worker
-        command: python manage.py run_async_migrations --check
-        restart: always
-        deploy:
-            replicas: 0
-        image: posthog/posthog:latest
-        environment:
-            SENTRY_DSN: $SENTRY_DSN
-            SITE_URL: https://$DOMAIN
-            SECRET_KEY: $POSTHOG_SERET
+    # asyncmigrationscheck:
+    #     <<: *worker
+    #     command: python manage.py run_async_migrations --check
+    #     restart: always
+    #     deploy:
+    #         replicas: 0
+    #     image: posthog/posthog:latest
+    #     environment:
+    #         SENTRY_DSN: $SENTRY_DSN
+    #         SITE_URL: https://$DOMAIN
+    #         SECRET_KEY: $POSTHOG_SERET
