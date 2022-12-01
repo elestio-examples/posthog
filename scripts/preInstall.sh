@@ -4,7 +4,7 @@
 mkdir -p ./postgres-data
 # chown -R 999:999 ./postgres-data
 
-mkdir -p ./posthog
+# mkdir -p ./posthog
 # chown -R 999:999 ./posthog
 
 mkdir -p ./zookeeper-datalog
