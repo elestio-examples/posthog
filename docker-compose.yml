@@ -219,7 +219,7 @@ services:
         image: posthog/posthog:latest
     web:
         <<: *worker
-        command: /bin/start
+        command: /compose/start
         restart: always
         volumes:
             - ./bin:/compose
