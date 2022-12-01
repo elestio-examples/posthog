@@ -31,10 +31,10 @@ services:
             - kafka
             - zookeeper
         volumes:
-            - ./posthog:/idl
-            - ./posthog:/docker-entrypoint-initdb.d
-            - ./posthog:/etc/clickhouse-server
-            # - ./posthog:/etc/clickhouse-server/users.xml
+            - ./posthog/posthog/idl:/idl
+            - ./posthog/docker/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+            - ./posthog/docker/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+            - ./posthog/docker/clickhouse/users.xml:/etc/clickhouse-server/users.xml
             - ./clickhouse-data:/var/lib/clickhouse
     zookeeper:
         image: zookeeper:3.7.0
@@ -126,7 +126,7 @@ services:
             MINIO_ROOT_USER: object_storage_root_user
             MINIO_ROOT_PASSWORD: object_storage_root_password
         entrypoint: sh
-        # command: -c 'mkdir -p /data/posthog && minio server --address ":19000" --console-address ":19001" /data' # create the 'posthog' bucket before starting the service
+        command: -c 'mkdir -p /data/posthog && minio server --address ":19000" --console-address ":19001" /data' # create the 'posthog' bucket before starting the service
 
     asyncmigrationscheck:
         <<: *worker
