@@ -28,3 +28,6 @@ mkdir -p ./clickhouse-data
 mkdir -p ./idl
 # chown -R 999:999 ./clickhouse-data
 
+mkdir -p ./Caddyfile
+# chown -R 999:999 ./clickhouse-data
+
