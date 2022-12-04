@@ -165,7 +165,7 @@ services:
             - kafka
             - zookeeper
         volumes:
-            - ./posthog/posthog/idl:/idl
+            - ./idl:/idl
             - ./clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
             - ./clickhouse/config.xml:/etc/clickhouse-server/config.xml
             - ./clickhouse/users.xml:/etc/clickhouse-server/users.xml
