@@ -126,8 +126,8 @@ services:
     ports:
       - "172.17.0.1:9674:80"
     #   - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+    # volumes:
+    #   - ./Caddyfile:/etc/caddy/Caddyfile
     depends_on:
       - web
 
