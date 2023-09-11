@@ -43,6 +43,8 @@ environments:
     value: "25"
   - key: "SECRET_KEY"
     value: "random_password"
+  - key: "SENTRY_DSN"
+    value: "https://public@sentry.example.com/1"
 
 config:
   runTime: "dockerCompose"
