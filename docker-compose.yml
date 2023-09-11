@@ -8,6 +8,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: posthog
       POSTGRES_PASSWORD: ${ADMIN_PASSWORD}
+    ports:
+      - 172.17.0.1:8245:5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -230,3 +232,15 @@ services:
       - kafka
       - object_storage
       - temporal
+
+    pgadmin4:
+      image: dpage/pgadmin4:${SOFTWARE_VERSION_TAG}
+      restart: always
+      environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
+      PGADMIN_LISTEN_PORT: 8080
+      ports:
+        - "172.17.0.1:2875:8080"
+      volumes:
+        - ./servers.json:/pgadmin4/servers.json

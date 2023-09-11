@@ -10,8 +10,14 @@ Deploy Posthog server with CI/CD on Elestio
 
 # Once deployed ...
 
-You can can open Jenkins UI here:
+You can can open Posthog here:
 
     URL: https://[CI_CD_DOMAIN]
     Login: root
+    password: [ADMIN_PASSWORD]
+
+You can open pgAdmin web UI here:
+
+    URL: https://[CI_CD_DOMAIN]:6443
+    email: [ADMIN_EMAIL]
     password: [ADMIN_PASSWORD]

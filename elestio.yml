@@ -7,6 +7,21 @@ ports:
     public: true
     path: "/"
     isAuth: false
+  - protocol: "HTTPS"
+    targetProtocol: "HTTP"
+    listeningPort: "6443"
+    targetPort: "2875"
+    targetIP: "172.17.0.1"
+    public: true
+    path: "/"
+    isAuth: false
+  - protocol: "TCP"
+    targetProtocol: "TCP"
+    listeningPort: "25420"
+    targetIP: "172.17.0.1"
+    targetPort: "8245"
+    public: true
+
 environments:
   - key: "SOFTWARE_VERSION_TAG"
     value: "latest"
@@ -49,4 +64,8 @@ webUI:
   - url: "https://[CI_CD_DOMAIN]"
     label: "Posthog Admin"
     login: "root"
+    password: "[ADMIN_PASSWORD]"
+  - url: "https://[CI_CD_DOMAIN]:6443"
+    label: "PgAdmin"
+    login: "[ADMIN_EMAIL]"
     password: "[ADMIN_PASSWORD]"

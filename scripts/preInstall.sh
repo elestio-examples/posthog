@@ -9,7 +9,7 @@ cat << EOT >> ./.env
 POSTHOG_SECRET=${POSTHOG_SECRET}
 EOT
 
-cat << EOT >> ./Caddyfile
+cat << EOT > ./Caddyfile
 
 {
     acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
@@ -18,6 +18,23 @@ cat << EOT >> ./Caddyfile
     reverse_proxy http://web:8000
 }
 
+EOT
+
+cat <<EOT > ./servers.json
+{
+    "Servers": {
+        "1": {
+            "Name": "local",
+            "Group": "Servers",
+            "Host": "172.17.0.1",
+            "Port": 8245,
+            "MaintenanceDB": "postgres",
+            "SSLMode": "prefer",
+            "Username": "postgres",
+            "PassFile": "/pgpass"
+        }
+    }
+}
 EOT
 
 chmod +x ./Caddyfile
