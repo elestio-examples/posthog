@@ -82,6 +82,9 @@ services:
       PGPASSWORD: ${ADMIN_PASSWORD}
       DEPLOYMENT: hobby
       ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
     depends_on:
       - db
       - redis
@@ -112,6 +115,9 @@ services:
       PGUSER: postgres
       PGPASSWORD: ${ADMIN_PASSWORD}
       DEPLOYMENT: hobby
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
 
   plugins:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}

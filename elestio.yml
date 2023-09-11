@@ -41,6 +41,8 @@ environments:
     value: "172.17.0.1"
   - key: "EMAIL_PORT"
     value: "25"
+  - key: "EMAIL_DEFAULT_FROM"
+    value: "[DOMAIN]@vm.elestio.app"
   - key: "SECRET_KEY"
     value: "random_password"
   - key: "SENTRY_DSN"
