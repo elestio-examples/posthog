@@ -1,33 +1,11 @@
 #set env vars
 #set -o allexport; source .env; set +o allexport;
 
-mkdir -p ./postgres-data
-# chown -R 999:999 ./postgres-data
 
-mkdir -p ./posthog
-# chown -R 999:999 ./posthog
+POSTHOG_SECRET=$(head -c 28 /dev/urandom | sha224sum -b | head -c 56)
 
-mkdir -p ./zookeeper-datalog
-# chown -R 999:999 ./zookeeper-datalog
+cat << EOT >> ./.env
 
-mkdir -p ./zookeeper-data
-# chown -R 999:999 ./zookeeper-data
-
-mkdir -p ./zookeeper-logs
-# chown -R 999:999 ./zookeeper-logs
-
-mkdir -p ./compose
-# chown -R 999:999 ./compose
-
-mkdir -p ./object_storage
-# chown -R 999:999 ./object_storage
-
-mkdir -p ./clickhouse-data
-# chown -R 999:999 ./clickhouse-data
-
-mkdir -p ./idl
-# chown -R 999:999 ./clickhouse-data
-
-mkdir -p ./Caddyfile
-# chown -R 999:999 ./clickhouse-data
+POSTHOG_SECRET=${POSTHOG_SECRET}
+EOT
 

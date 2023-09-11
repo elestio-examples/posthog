@@ -2,12 +2,14 @@ ports:
   - protocol: "HTTPS"
     targetProtocol: "HTTP"
     listeningPort: "443"
-    targetPort: "21081"
+    targetPort: "9674"
     targetIP: "172.17.0.1"
     public: true
     path: "/"
     isAuth: false
 environments:
+  - key: "SOFTWARE_VERSION_TAG"
+    value: "latest"
   - key: "ADMIN_EMAIL"
     value: "[EMAIL]"
   - key: "ADMIN_LOGIN"

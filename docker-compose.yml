@@ -1,276 +1,228 @@
-# #
-# # `docker-compose` file used ONLY for hobby deployments.
-# #
-# # Please take a look at https://posthog.com/docs/self-host/deploy/hobby
-# # for more info.
-# #
-# version: '3'
-
-# services:
-#     db:
-#         image: postgres:12-alpine
-#         restart: always
-#         environment:
-#             POSTGRES_USER: posthog
-#             POSTGRES_DB: posthog
-#             POSTGRES_PASSWORD: posthog
-#         volumes:
-#             - ./postgres-data:/var/lib/postgresql/data
-#     redis:
-#         image: redis:6.2.7-alpine
-#         restart: always
-#         command: redis-server --maxmemory-policy allkeys-lru --maxmemory 200mb
-#     clickhouse:
-#         #
-#         # Note: please keep the default version in sync across
-#         #       `posthog` and the `charts-clickhouse` repos
-#         #
-#         image: clickhouse/clickhouse-server:22.3
-#         restart: always
-#         depends_on:
-#             - kafka
-#             - zookeeper
-#         volumes:
-#             - ./idl:/idl
-#             - ./clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-#             - ./clickhouse/config.xml:/etc/clickhouse-server/config.xml
-#             - ./clickhouse/users.xml:/etc/clickhouse-server/users.xml
-#             - ./clickhouse-data:/var/lib/clickhouse
-#     zookeeper:
-#         image: zookeeper:3.7.0
-#         restart: always
-#         volumes:
-#             - ./zookeeper-datalog:/datalog
-#             - ./zookeeper-data:/data
-#             - ./zookeeper-logs:/logs
-#     kafka:
-#         image: bitnami/kafka:2.8.1-debian-10-r99
-#         restart: always
-#         depends_on:
-#             - zookeeper
-#         environment:
-#             KAFKA_BROKER_ID: 1001
-#             KAFKA_CFG_RESERVED_BROKER_MAX_ID: 1001
-#             KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
-#             KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-#             KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
-#             ALLOW_PLAINTEXT_LISTENER: 'true'
-
-#     worker: &worker
-#         image: posthog/posthog:latest
-#         command: ./bin/docker-worker-celery --with-scheduler
-#         restart: always
-#         environment:
-#             # SENTRY_DSN: $SENTRY_DSN
-#             SITE_URL: https://${DOMAIN}
-#             DISABLE_SECURE_SSL_REDIRECT: 'true'
-#             IS_BEHIND_PROXY: 'true'
-#             DATABASE_URL: 'postgres://posthog:posthog@db:5432/posthog'
-#             CLICKHOUSE_HOST: 'clickhouse'
-#             CLICKHOUSE_DATABASE: 'posthog'
-#             CLICKHOUSE_SECURE: 'false'
-#             CLICKHOUSE_VERIFY: 'false'
-#             KAFKA_URL: 'kafka://kafka'
-#             REDIS_URL: 'redis://redis:6379/'
-#             SECRET_KEY: ${ADMIN_EMAIL}
-#             PGHOST: db
-#             PGUSER: posthog
-#             PGPASSWORD: posthog
-#             DEPLOYMENT: hobby
-#         depends_on:
-#             - db
-#             - redis
-#             - clickhouse
-#             - kafka
-#             - object_storage
-#     web:
-#         <<: *worker
-#         command: /compose/start
-#         restart: always
-#         ports:
-#             - 172.17.0.1:8000:8000
-#         volumes:
-#             - ./bin:/compose
-#     # caddy:
-#     #     image: caddy:2.6.1
-#     #     restart: unless-stopped
-#     #     ports:
-#     #         - '80:80'
-#     #         - '443:443'
-#     #     volumes:
-#     #         - ./Caddyfile:/etc/caddy/Caddyfile
-#     #     depends_on:
-#     #         - web
-#     plugins:
-#         image: posthog/posthog:latest
-#         command: ./bin/plugin-server --no-restart-loop
-#         restart: always
-#         environment:
-#             DATABASE_URL: 'postgres://posthog:posthog@db:5432/posthog'
-#             KAFKA_HOSTS: 'kafka:9092'
-#             REDIS_URL: 'redis://redis:6379/'
-#             CLICKHOUSE_HOST: 'clickhouse'
-#         depends_on:
-#             - db
-#             - redis
-#             - clickhouse
-#             - kafka
-#             - object_storage
-
-#     object_storage:
-#         image: minio/minio:latest
-#         restart: always
-#         volumes:
-#             - ./object_storage:/data
-#         environment:
-#             MINIO_ROOT_USER: object_storage_root_user
-#             MINIO_ROOT_PASSWORD: object_storage_root_password
-#         entrypoint: sh
-#         command: -c 'mkdir -p /data/posthog && minio server --address ":19000" --console-address ":19001" /data' # create the 'posthog' bucket before starting the service
-
-#     asyncmigrationscheck:
-#         <<: *worker
-#         command: python manage.py run_async_migrations --check
-#         restart: 'no'
-#         scale: 0
-
-
-
-
-
+#
+# `docker-compose` file used ONLY for hobby deployments.
+#
+# Please take a look at https://posthog.com/docs/self-host/deploy/hobby
+# for more info.
+#
+# PostHog has sunset support for self-hosted K8s deployments.
+# See: https://posthog.com/blog/sunsetting-helm-support-posthog
+#
 
 services:
-    db:
-        image: postgres:12-alpine
-        restart: always
-        environment:
-            POSTGRES_USER: posthog
-            POSTGRES_DB: posthog
-            POSTGRES_PASSWORD: posthog
-        command: postgres -c 'max_connections=1000'
-        volumes:
-            - ./postgres-data:/var/lib/postgresql/data
-    redis:
-        image: redis:6.2.7-alpine
-        restart: always
-        command: redis-server --maxmemory-policy allkeys-lru --maxmemory 200mb
-    clickhouse:
-        #
-        # Note: please keep the default version in sync across
-        #       `posthog` and the `charts-clickhouse` repos
-        #
-        image: clickhouse/clickhouse-server:22.3
-        restart: always
-        depends_on:
-            - kafka
-            - zookeeper
-        volumes:
-            - ./idl:/idl
-            - ./clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-            - ./clickhouse/config.xml:/etc/clickhouse-server/config.xml
-            - ./clickhouse/users.xml:/etc/clickhouse-server/users.xml
-            - ./clickhouse-data:/var/lib/clickhouse
-    zookeeper:
-        image: zookeeper:3.7.0
-        restart: always
-        volumes:
-            - ./zookeeper-datalog:/datalog
-            - ./zookeeper-data:/data
-            - ./zookeeper-logs:/logs
-    kafka:
-        image: bitnami/kafka:2.8.1-debian-10-r99
-        restart: always
-        depends_on:
-            - zookeeper
-        environment:
-            KAFKA_BROKER_ID: 1001
-            KAFKA_CFG_RESERVED_BROKER_MAX_ID: 1001
-            KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
-            KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-            KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
-            ALLOW_PLAINTEXT_LISTENER: 'true'
-    worker: &worker
-        command: ./bin/docker-worker-celery --with-scheduler
-        restart: always
-        environment:
-            DISABLE_SECURE_SSL_REDIRECT: 'true'
-            IS_BEHIND_PROXY: 'true'
-            DATABASE_URL: 'postgres://posthog:posthog@db:5432/posthog'
-            CLICKHOUSE_HOST: 'clickhouse'
-            CLICKHOUSE_DATABASE: 'posthog'
-            CLICKHOUSE_SECURE: 'false'
-            CLICKHOUSE_VERIFY: 'false'
-            KAFKA_URL: 'kafka://kafka'
-            REDIS_URL: 'redis://redis:6379/'
-            PGHOST: db
-            PGUSER: posthog
-            PGPASSWORD: posthog
-            DEPLOYMENT: hobby
-        depends_on:
-            - db
-            - redis
-            - clickhouse
-            - kafka
-            - object_storage
-        image: posthog/posthog:latest
-    web:
-        <<: *worker
-        command: /compose/start
-        restart: always
-        ports:
-            - 172.17.0.1:21081:8000
-        volumes:
-            - ./bin:/compose
-        image: posthog/posthog:latest
-        environment:
-            SENTRY_DSN: $SENTRY_DSN
-            SITE_URL: https://$DOMAIN
-            SECRET_KEY: $SECRET_KEY
-    plugins:
-        command: ./bin/plugin-server --no-restart-loop
-        restart: always
-        environment:
-            DATABASE_URL: 'postgres://posthog:posthog@db:5432/posthog'
-            KAFKA_HOSTS: 'kafka:9092'
-            REDIS_URL: 'redis://redis:6379/'
-            CLICKHOUSE_HOST: 'clickhouse'
-        depends_on:
-            - db
-            - redis
-            - clickhouse
-            - kafka
-            - object_storage
-        image: posthog/posthog:latest
+  db:
+    image: elestio/postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: posthog
+      POSTGRES_PASSWORD: ${ADMIN_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U posthog"]
+      interval: 5s
+      timeout: 5s
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
 
-    # caddy:
-    #     image: caddy:2.6.1
-    #     restart: always
-    #     ports:
-    #         - '172.17.0.1:21080:80'
-    #         # - '443:443'
-    #     volumes:
-    #         - ./Caddyfile:/etc/caddy/Caddyfile
-    #     depends_on:
-    #         - web
-    object_storage:
-        image: minio/minio:RELEASE.2022-06-25T15-50-16Z
-        restart: always
-        environment:
-            MINIO_ROOT_USER: object_storage_root_user
-            MINIO_ROOT_PASSWORD: object_storage_root_password
-        entrypoint: sh
-        command: -c 'mkdir -p /data/posthog && minio server --address ":19000" --console-address ":19001" /data' # create the 'posthog' bucket before starting the service
-        volumes:
-            - ./object_storage:/data
+  redis:
+    image: elestio/redis:7.0
+    restart: always
+    command: redis-server --maxmemory-policy allkeys-lru --maxmemory 200mb
 
-    # asyncmigrationscheck:
-    #     <<: *worker
-    #     command: python manage.py run_async_migrations --check
-    #     restart: always
-    #     deploy:
-    #         replicas: 0
-    #     image: posthog/posthog:latest
-    #     environment:
-    #         SENTRY_DSN: $SENTRY_DSN
-    #         SITE_URL: https://$DOMAIN
-    #         SECRET_KEY: $POSTHOG_SERET
+  clickhouse:
+    #
+    # Note: please keep the default version in sync across
+    #       `posthog` and the `charts-clickhouse` repos
+    #
+    image: clickhouse/clickhouse-server:23.6.1.1524
+    restart: always
+    depends_on:
+      - kafka
+      - zookeeper
+    volumes:
+      - ./posthog/posthog/idl:/idl
+      - ./posthog/docker/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./posthog/docker/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ./posthog/docker/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ./clickhouse-data:/var/lib/clickhouse
+
+  zookeeper:
+    image: zookeeper:3.7.0
+    restart: always
+    volumes:
+      - ./zookeeper-datalog:/datalog
+      - ./zookeeper-data:/data
+      - ./zookeeper-logs:/logs
+
+  kafka:
+    image: bitnami/kafka:2.8.1-debian-10-r99
+    restart: always
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1001
+      KAFKA_CFG_RESERVED_BROKER_MAX_ID: 1001
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+      ALLOW_PLAINTEXT_LISTENER: "true"
+
+  worker: &worker
+    image: posthog/posthog:${SOFTWARE_VERSION_TAG}
+    restart: always
+    command: ./bin/docker-worker-celery --with-scheduler
+    environment:
+      #   SENTRY_DSN: $SENTRY_DSN
+      SITE_URL: https://${DOMAIN}
+      SECRET_KEY: ${POSTHOG_SECRET}
+      DISABLE_SECURE_SSL_REDIRECT: "true"
+      IS_BEHIND_PROXY: "true"
+      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
+      CLICKHOUSE_HOST: "clickhouse"
+      CLICKHOUSE_DATABASE: "posthog"
+      CLICKHOUSE_SECURE: "false"
+      CLICKHOUSE_VERIFY: "false"
+      KAFKA_HOSTS: "kafka"
+      REDIS_URL: "redis://redis:6379/"
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${ADMIN_PASSWORD}
+      DEPLOYMENT: hobby
+    depends_on:
+      - db
+      - redis
+      - clickhouse
+      - kafka
+      - object_storage
+
+  web:
+    <<: *worker
+    image: posthog/posthog:${SOFTWARE_VERSION_TAG}
+    restart: always
+    command: ./bin/start-backend & ./bin/start-frontend
+    volumes:
+      - ./compose:/compose
+    environment:
+      #   SENTRY_DSN: $SENTRY_DSN
+      SITE_URL: https://${DOMAIN}
+      SECRET_KEY: ${POSTHOG_SECRET}
+
+  plugins:
+    image: posthog/posthog:${SOFTWARE_VERSION_TAG}
+    restart: always
+    command: ./bin/plugin-server --no-restart-loop
+    environment:
+      #   SENTRY_DSN: $SENTRY_DSN
+      SITE_URL: https://${DOMAIN}
+      SECRET_KEY: ${POSTHOG_SECRET}
+      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
+      KAFKA_HOSTS: "kafka:9092"
+      REDIS_URL: "redis://redis:6379/"
+      CLICKHOUSE_HOST: "clickhouse"
+      CLICKHOUSE_DATABASE: "posthog"
+      CLICKHOUSE_SECURE: "false"
+      CLICKHOUSE_VERIFY: "false"
+    depends_on:
+      - db
+      - redis
+      - clickhouse
+      - kafka
+      - object_storage
+
+  caddy:
+    image: caddy:2.6.1
+    restart: always
+    ports:
+      - "172.17.0.1:9674:80"
+    #   - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - web
+
+  object_storage:
+    image: minio/minio:RELEASE.2022-06-25T15-50-16Z
+    restart: always
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: ${ADMIN_PASSWORD}
+    entrypoint: sh
+    command: -c 'mkdir -p /data/posthog && minio server --address ":19000" --console-address ":19001" /data' # create the 'posthog' bucket before starting the service
+    volumes:
+      - ./object_storage:/data
+
+  asyncmigrationscheck:
+    <<: *worker
+    image: posthog/posthog:${SOFTWARE_VERSION_TAG}
+    restart: "no"
+    command: python manage.py run_async_migrations --check
+    deploy:
+      replicas: 0
+    environment:
+      #   SENTRY_DSN: $SENTRY_DSN
+      SITE_URL: https://${DOMAIN}
+      SECRET_KEY: ${POSTHOG_SECRET}
+      SKIP_ASYNC_MIGRATIONS_SETUP: 0
+
+  # Temporal containers
+  temporal:
+    image: temporalio/auto-setup:1.20.0
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=${ADMIN_PASSWORD}
+      - POSTGRES_SEEDS=db
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - ENABLE_ES=true
+      - ES_SEEDS=elasticsearch
+      - ES_VERSION=v7
+    ports:
+      - 7233:7233
+    labels:
+      kompose.volume.type: configMap
+    volumes:
+      - ./posthog/docker/temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+
+  temporal-admin-tools:
+    image: temporalio/admin-tools:1.20.0
+    restart: always
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    stdin_open: true
+    tty: true
+
+  temporal-ui:
+    image: temporalio/ui:2.10.3
+    restart: always
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    ports:
+      - 8081:8080
+
+  temporal-django-worker:
+    <<: *worker
+    image: posthog/posthog:${SOFTWARE_VERSION_TAG}
+    restart: always
+    command: ./bin/temporal-django-worker
+    environment:
+      #   SENTRY_DSN: $SENTRY_DSN
+      SITE_URL: https://${DOMAIN}
+      TEMPORAL_HOST: temporal
+    volumes:
+      - ./compose:/compose
+    depends_on:
+      - db
+      - redis
+      - clickhouse
+      - kafka
+      - object_storage
+      - temporal
