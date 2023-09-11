@@ -19,3 +19,8 @@ cat << EOT >> ./Caddyfile
 }
 
 EOT
+
+chmod +x ./Caddyfile
+chmod +x ./compose/start
+chmod +x ./compose/temporal-django-worker
+chmod +x ./compose/wait
