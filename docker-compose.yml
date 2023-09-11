@@ -9,11 +9,11 @@ services:
       POSTGRES_DB: posthog
       POSTGRES_PASSWORD: ${ADMIN_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U posthog"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - ./storage/postgres-data:/var/lib/postgresql/data
 
   redis:
     image: elestio/redis:7.0
@@ -35,15 +35,15 @@ services:
       - ./posthog/docker/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
       - ./posthog/docker/clickhouse/config.xml:/etc/clickhouse-server/config.xml
       - ./posthog/docker/clickhouse/users.xml:/etc/clickhouse-server/users.xml
-      - ./clickhouse-data:/var/lib/clickhouse
+      - ./storage/clickhouse-data:/var/lib/clickhouse
 
   zookeeper:
     image: zookeeper:3.7.0
     restart: always
     volumes:
-      - ./zookeeper-datalog:/datalog
-      - ./zookeeper-data:/data
-      - ./zookeeper-logs:/logs
+      - ./storage/zookeeper-datalog:/datalog
+      - ./storage/zookeeper-data:/data
+      - ./storage/zookeeper-logs:/logs
 
   kafka:
     image: bitnami/kafka:2.8.1-debian-10-r99
@@ -58,12 +58,12 @@ services:
       KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
       ALLOW_PLAINTEXT_LISTENER: "true"
 
-  worker: &worker
+  worker:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
     restart: always
     command: ./bin/docker-worker-celery --with-scheduler
     environment:
-      #   SENTRY_DSN: $SENTRY_DSN
+      SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       SECRET_KEY: ${POSTHOG_SECRET}
       DISABLE_SECURE_SSL_REDIRECT: "true"
@@ -79,6 +79,7 @@ services:
       PGUSER: postgres
       PGPASSWORD: ${ADMIN_PASSWORD}
       DEPLOYMENT: hobby
+      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
     depends_on:
       - db
       - redis
@@ -87,23 +88,35 @@ services:
       - object_storage
 
   web:
-    <<: *worker
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
     restart: always
-    command: ./bin/start-backend & ./bin/start-frontend
+    command: /compose/start
     volumes:
       - ./compose:/compose
     environment:
-      #   SENTRY_DSN: $SENTRY_DSN
+      SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       SECRET_KEY: ${POSTHOG_SECRET}
+      DISABLE_SECURE_SSL_REDIRECT: "true"
+      IS_BEHIND_PROXY: "true"
+      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
+      CLICKHOUSE_HOST: "clickhouse"
+      CLICKHOUSE_DATABASE: "posthog"
+      CLICKHOUSE_SECURE: "false"
+      CLICKHOUSE_VERIFY: "false"
+      KAFKA_HOSTS: "kafka"
+      REDIS_URL: "redis://redis:6379/"
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${ADMIN_PASSWORD}
+      DEPLOYMENT: hobby
 
   plugins:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
     restart: always
     command: ./bin/plugin-server --no-restart-loop
     environment:
-      #   SENTRY_DSN: $SENTRY_DSN
+      SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       SECRET_KEY: ${POSTHOG_SECRET}
       DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
@@ -126,8 +139,8 @@ services:
     ports:
       - "172.17.0.1:9674:80"
     #   - "443:443"
-    # volumes:
-    #   - ./Caddyfile:/etc/caddy/Caddyfile
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
     depends_on:
       - web
 
@@ -140,17 +153,16 @@ services:
     entrypoint: sh
     command: -c 'mkdir -p /data/posthog && minio server --address ":19000" --console-address ":19001" /data' # create the 'posthog' bucket before starting the service
     volumes:
-      - ./object_storage:/data
+      - ./storage/object_storage:/data
 
   asyncmigrationscheck:
-    <<: *worker
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
     restart: "no"
     command: python manage.py run_async_migrations --check
     deploy:
       replicas: 0
     environment:
-      #   SENTRY_DSN: $SENTRY_DSN
+      SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       SECRET_KEY: ${POSTHOG_SECRET}
       SKIP_ASYNC_MIGRATIONS_SETUP: 0
@@ -201,14 +213,14 @@ services:
       - 8081:8080
 
   temporal-django-worker:
-    <<: *worker
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
     restart: always
-    command: ./bin/temporal-django-worker
+    command: /compose/temporal-django-worker
     environment:
-      #   SENTRY_DSN: $SENTRY_DSN
+      SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       TEMPORAL_HOST: temporal
+      SECRET_KEY: ${SECRET_KEY}
     volumes:
       - ./compose:/compose
     depends_on:
