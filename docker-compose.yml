@@ -134,6 +134,9 @@ services:
       CLICKHOUSE_DATABASE: "posthog"
       CLICKHOUSE_SECURE: "false"
       CLICKHOUSE_VERIFY: "false"
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
     depends_on:
       - db
       - redis
@@ -229,6 +232,9 @@ services:
       SITE_URL: https://${DOMAIN}
       TEMPORAL_HOST: temporal
       SECRET_KEY: ${SECRET_KEY}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
     volumes:
       - ./compose:/compose
     depends_on:
