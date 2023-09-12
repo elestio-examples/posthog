@@ -118,6 +118,10 @@ services:
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_ENABLED: "true"
+      EMAIL_USE_TLS: "false"
 
   plugins:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
@@ -137,6 +141,10 @@ services:
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_ENABLED: "true"
+      EMAIL_USE_TLS: "false"
     depends_on:
       - db
       - redis
@@ -166,6 +174,13 @@ services:
     volumes:
       - ./storage/object_storage:/data
 
+  migrate:
+    image: posthog/posthog:${SOFTWARE_VERSION_TAG}
+    command: sh -c "python manage.py migrate && python manage.py migrate_clickhouse && python manage.py run_async_migrations "
+    restart: "no"
+    deploy:
+      replicas: 0
+
   asyncmigrationscheck:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
     restart: "no"
@@ -178,7 +193,23 @@ services:
       SECRET_KEY: ${POSTHOG_SECRET}
       SKIP_ASYNC_MIGRATIONS_SETUP: 0
 
-  # Temporal containers
+    # Temporal containers
+
+  elasticsearch:
+    environment:
+      - cluster.routing.allocation.disk.threshold_enabled=true
+      - cluster.routing.allocation.disk.watermark.low=512mb
+      - cluster.routing.allocation.disk.watermark.high=256mb
+      - cluster.routing.allocation.disk.watermark.flood_stage=128mb
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+      - xpack.security.enabled=false
+    image: elasticsearch:7.16.2
+    expose:
+      - 9200
+    volumes:
+      - ./storage/es:/var/lib/elasticsearch/data
+
   temporal:
     image: temporalio/auto-setup:1.20.0
     restart: always
@@ -235,6 +266,10 @@ services:
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_ENABLED: "true"
+      EMAIL_USE_TLS: "false"
     volumes:
       - ./compose:/compose
     depends_on:
