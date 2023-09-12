@@ -341,6 +341,7 @@ services:
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
       EMAIL_ENABLED: "true"
       EMAIL_USE_TLS: "false"
+      TEMPORAL_HOST: temporal
     volumes:
       - ./compose:/compose
     depends_on:
