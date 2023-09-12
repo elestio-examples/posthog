@@ -85,6 +85,10 @@ services:
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_ENABLED: "true"
+      EMAIL_USE_TLS: "false"
     depends_on:
       - db
       - redis
@@ -115,6 +119,7 @@ services:
       PGUSER: postgres
       PGPASSWORD: ${ADMIN_PASSWORD}
       DEPLOYMENT: hobby
+      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
@@ -131,13 +136,20 @@ services:
       SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       SECRET_KEY: ${POSTHOG_SECRET}
+      DISABLE_SECURE_SSL_REDIRECT: "true"
+      IS_BEHIND_PROXY: "true"
       DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
-      KAFKA_HOSTS: "kafka:9092"
-      REDIS_URL: "redis://redis:6379/"
       CLICKHOUSE_HOST: "clickhouse"
       CLICKHOUSE_DATABASE: "posthog"
       CLICKHOUSE_SECURE: "false"
       CLICKHOUSE_VERIFY: "false"
+      KAFKA_HOSTS: "kafka"
+      REDIS_URL: "redis://redis:6379/"
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${ADMIN_PASSWORD}
+      DEPLOYMENT: hobby
+      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
@@ -180,6 +192,31 @@ services:
     restart: "no"
     deploy:
       replicas: 0
+    environment:
+      SENTRY_DSN: $SENTRY_DSN
+      SITE_URL: https://${DOMAIN}
+      SECRET_KEY: ${POSTHOG_SECRET}
+      DISABLE_SECURE_SSL_REDIRECT: "true"
+      IS_BEHIND_PROXY: "true"
+      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
+      CLICKHOUSE_HOST: "clickhouse"
+      CLICKHOUSE_DATABASE: "posthog"
+      CLICKHOUSE_SECURE: "false"
+      CLICKHOUSE_VERIFY: "false"
+      KAFKA_HOSTS: "kafka"
+      REDIS_URL: "redis://redis:6379/"
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${ADMIN_PASSWORD}
+      DEPLOYMENT: hobby
+      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_ENABLED: "true"
+      EMAIL_USE_TLS: "false"
 
   asyncmigrationscheck:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
@@ -191,6 +228,27 @@ services:
       SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       SECRET_KEY: ${POSTHOG_SECRET}
+      DISABLE_SECURE_SSL_REDIRECT: "true"
+      IS_BEHIND_PROXY: "true"
+      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
+      CLICKHOUSE_HOST: "clickhouse"
+      CLICKHOUSE_DATABASE: "posthog"
+      CLICKHOUSE_SECURE: "false"
+      CLICKHOUSE_VERIFY: "false"
+      KAFKA_HOSTS: "kafka"
+      REDIS_URL: "redis://redis:6379/"
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${ADMIN_PASSWORD}
+      DEPLOYMENT: hobby
+      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_ENABLED: "true"
+      EMAIL_USE_TLS: "false"
       SKIP_ASYNC_MIGRATIONS_SETUP: 0
 
     # Temporal containers
@@ -261,8 +319,21 @@ services:
     environment:
       SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
-      TEMPORAL_HOST: temporal
-      SECRET_KEY: ${SECRET_KEY}
+      SECRET_KEY: ${POSTHOG_SECRET}
+      DISABLE_SECURE_SSL_REDIRECT: "true"
+      IS_BEHIND_PROXY: "true"
+      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
+      CLICKHOUSE_HOST: "clickhouse"
+      CLICKHOUSE_DATABASE: "posthog"
+      CLICKHOUSE_SECURE: "false"
+      CLICKHOUSE_VERIFY: "false"
+      KAFKA_HOSTS: "kafka"
+      REDIS_URL: "redis://redis:6379/"
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${ADMIN_PASSWORD}
+      DEPLOYMENT: hobby
+      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
