@@ -23,10 +23,6 @@ services:
     command: redis-server --maxmemory-policy allkeys-lru --maxmemory 200mb
 
   clickhouse:
-    #
-    # Note: please keep the default version in sync across
-    #       `posthog` and the `charts-clickhouse` repos
-    #
     image: clickhouse/clickhouse-server:23.6.1.1524
     restart: always
     depends_on:
@@ -70,25 +66,22 @@ services:
       SECRET_KEY: ${POSTHOG_SECRET}
       DISABLE_SECURE_SSL_REDIRECT: "true"
       IS_BEHIND_PROXY: "true"
+      TRUST_ALL_PROXIES: "true"
       DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
       CLICKHOUSE_HOST: "clickhouse"
       CLICKHOUSE_DATABASE: "posthog"
       CLICKHOUSE_SECURE: "false"
       CLICKHOUSE_VERIFY: "false"
-      KAFKA_HOSTS: "kafka:9092"
+      KAFKA_HOSTS: "kafka"
       REDIS_URL: "redis://redis:6379/"
       PGHOST: db
       PGUSER: postgres
       PGPASSWORD: ${ADMIN_PASSWORD}
       DEPLOYMENT: hobby
-      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_ENABLED: "true"
-      EMAIL_USE_TLS: "false"
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
     depends_on:
       - db
       - redis
@@ -108,25 +101,24 @@ services:
       SECRET_KEY: ${POSTHOG_SECRET}
       DISABLE_SECURE_SSL_REDIRECT: "true"
       IS_BEHIND_PROXY: "true"
+      TRUST_ALL_PROXIES: "true"
       DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
       CLICKHOUSE_HOST: "clickhouse"
       CLICKHOUSE_DATABASE: "posthog"
       CLICKHOUSE_SECURE: "false"
       CLICKHOUSE_VERIFY: "false"
-      KAFKA_HOSTS: "kafka:9092"
+      KAFKA_HOSTS: "kafka"
       REDIS_URL: "redis://redis:6379/"
       PGHOST: db
       PGUSER: postgres
       PGPASSWORD: ${ADMIN_PASSWORD}
       DEPLOYMENT: hobby
-      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_ENABLED: "true"
-      EMAIL_USE_TLS: "false"
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+    ports:
+      - 172.17.0.1:9674:8000
 
   plugins:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
@@ -136,44 +128,23 @@ services:
       SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       SECRET_KEY: ${POSTHOG_SECRET}
-      DISABLE_SECURE_SSL_REDIRECT: "true"
-      IS_BEHIND_PROXY: "true"
       DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
+      KAFKA_HOSTS: "kafka:9092"
+      REDIS_URL: "redis://redis:6379/"
       CLICKHOUSE_HOST: "clickhouse"
       CLICKHOUSE_DATABASE: "posthog"
       CLICKHOUSE_SECURE: "false"
       CLICKHOUSE_VERIFY: "false"
-      KAFKA_HOSTS: "kafka:9092"
-      REDIS_URL: "redis://redis:6379/"
-      PGHOST: db
-      PGUSER: postgres
-      PGPASSWORD: ${ADMIN_PASSWORD}
-      DEPLOYMENT: hobby
-      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_ENABLED: "true"
-      EMAIL_USE_TLS: "false"
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
     depends_on:
       - db
       - redis
       - clickhouse
       - kafka
       - object_storage
-
-  caddy:
-    image: caddy:2.6.1
-    restart: always
-    ports:
-      - "172.17.0.1:9674:80"
-    #   - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-    depends_on:
-      - web
 
   object_storage:
     image: minio/minio:RELEASE.2022-06-25T15-50-16Z
@@ -182,41 +153,16 @@ services:
       MINIO_ROOT_USER: root
       MINIO_ROOT_PASSWORD: ${ADMIN_PASSWORD}
     entrypoint: sh
-    command: -c 'mkdir -p /data/posthog && minio server --address ":19000" --console-address ":19001" /data' # create the 'posthog' bucket before starting the service
+    command: -c 'mkdir -p /data/posthog && minio server --address ":19000" --console-address ":19001" /data'
     volumes:
       - ./storage/object_storage:/data
 
   migrate:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
-    command: sh -c "python manage.py migrate && python manage.py migrate_clickhouse && python manage.py run_async_migrations "
-    restart: "no"
+    restart: always
+    command: sh -c "python manage.py migrate && python manage.py migrate_clickhouse && python manage.py run_async_migrations"
     deploy:
       replicas: 0
-    environment:
-      SENTRY_DSN: $SENTRY_DSN
-      SITE_URL: https://${DOMAIN}
-      SECRET_KEY: ${POSTHOG_SECRET}
-      DISABLE_SECURE_SSL_REDIRECT: "true"
-      IS_BEHIND_PROXY: "true"
-      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
-      CLICKHOUSE_HOST: "clickhouse"
-      CLICKHOUSE_DATABASE: "posthog"
-      CLICKHOUSE_SECURE: "false"
-      CLICKHOUSE_VERIFY: "false"
-      KAFKA_HOSTS: "kafka:9092"
-      REDIS_URL: "redis://redis:6379/"
-      PGHOST: db
-      PGUSER: postgres
-      PGPASSWORD: ${ADMIN_PASSWORD}
-      DEPLOYMENT: hobby
-      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
-      EMAIL_HOST: ${EMAIL_HOST}
-      EMAIL_PORT: ${EMAIL_PORT}
-      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_ENABLED: "true"
-      EMAIL_USE_TLS: "false"
 
   asyncmigrationscheck:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
@@ -228,45 +174,7 @@ services:
       SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
       SECRET_KEY: ${POSTHOG_SECRET}
-      DISABLE_SECURE_SSL_REDIRECT: "true"
-      IS_BEHIND_PROXY: "true"
-      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
-      CLICKHOUSE_HOST: "clickhouse"
-      CLICKHOUSE_DATABASE: "posthog"
-      CLICKHOUSE_SECURE: "false"
-      CLICKHOUSE_VERIFY: "false"
-      KAFKA_HOSTS: "kafka:9092"
-      REDIS_URL: "redis://redis:6379/"
-      PGHOST: db
-      PGUSER: postgres
-      PGPASSWORD: ${ADMIN_PASSWORD}
-      DEPLOYMENT: hobby
-      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
-      EMAIL_HOST: ${EMAIL_HOST}
-      EMAIL_PORT: ${EMAIL_PORT}
-      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_ENABLED: "true"
-      EMAIL_USE_TLS: "false"
       SKIP_ASYNC_MIGRATIONS_SETUP: 0
-
-    # Temporal containers
-
-  elasticsearch:
-    environment:
-      - cluster.routing.allocation.disk.threshold_enabled=true
-      - cluster.routing.allocation.disk.watermark.low=512mb
-      - cluster.routing.allocation.disk.watermark.high=256mb
-      - cluster.routing.allocation.disk.watermark.flood_stage=128mb
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms256m -Xmx256m
-      - xpack.security.enabled=false
-    image: elasticsearch:7.16.2
-    expose:
-      - 9200
-    volumes:
-      - ./storage/es:/var/lib/elasticsearch/data
 
   temporal:
     image: temporalio/auto-setup:1.20.0
@@ -281,7 +189,7 @@ services:
       - POSTGRES_PWD=${ADMIN_PASSWORD}
       - POSTGRES_SEEDS=db
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
-      - ENABLE_ES=true
+      - ENABLE_ES=false
       - ES_SEEDS=elasticsearch
       - ES_VERSION=v7
     ports:
@@ -310,7 +218,7 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://localhost:3000
     ports:
-      - 8081:8080
+      - 172.17.0.1:8081:8080
 
   temporal-django-worker:
     image: posthog/posthog:${SOFTWARE_VERSION_TAG}
@@ -319,29 +227,14 @@ services:
     environment:
       SENTRY_DSN: $SENTRY_DSN
       SITE_URL: https://${DOMAIN}
+      TEMPORAL_HOST: temporal
       SECRET_KEY: ${POSTHOG_SECRET}
-      DISABLE_SECURE_SSL_REDIRECT: "true"
-      IS_BEHIND_PROXY: "true"
-      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
-      CLICKHOUSE_HOST: "clickhouse"
-      CLICKHOUSE_DATABASE: "posthog"
-      CLICKHOUSE_SECURE: "false"
-      CLICKHOUSE_VERIFY: "false"
-      KAFKA_HOSTS: "kafka:9092"
-      REDIS_URL: "redis://redis:6379/"
-      PGHOST: db
-      PGUSER: postgres
-      PGPASSWORD: ${ADMIN_PASSWORD}
-      DEPLOYMENT: hobby
-      ALLOWED_HOSTS: "posthogfht-u353.vm.elestio.app"
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_ENABLED: "true"
-      EMAIL_USE_TLS: "false"
-      TEMPORAL_HOST: temporal
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      DATABASE_URL: "postgres://postgres:${ADMIN_PASSWORD}@db:5432/posthog"
+      REDIS_URL: "redis://redis:6379/"
     volumes:
       - ./compose:/compose
     depends_on:
