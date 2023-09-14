@@ -75,7 +75,7 @@ lifeCycleConfig:
 webUI:
   - url: "https://[CI_CD_DOMAIN]"
     label: "Posthog Admin"
-    login: "root"
+    login: "[ADMIN_EMAIL]"
     password: "[ADMIN_PASSWORD]"
   - url: "https://[CI_CD_DOMAIN]:6443"
     label: "PgAdmin"
