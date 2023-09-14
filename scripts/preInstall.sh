@@ -9,17 +9,6 @@ cat << EOT >> ./.env
 POSTHOG_SECRET=${POSTHOG_SECRET}
 EOT
 
-cat << EOT > ./Caddyfile
-
-{
-    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
-}
-    ${DOMAIN}, :80, :443 {
-    reverse_proxy http://web:8000
-}
-
-EOT
-
 cat <<EOT > ./servers.json
 {
     "Servers": {

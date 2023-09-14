@@ -15,14 +15,6 @@ ports:
     public: true
     path: "/"
     isAuth: false
-  - protocol: "HTTPS"
-    targetProtocol: "HTTP"
-    listeningPort: "5443"
-    targetPort: "8081"
-    targetIP: "172.17.0.1"
-    public: true
-    path: "/"
-    isAuth: false
   - protocol: "TCP"
     targetProtocol: "TCP"
     listeningPort: "25420"
@@ -79,9 +71,5 @@ webUI:
     password: "[ADMIN_PASSWORD]"
   - url: "https://[CI_CD_DOMAIN]:6443"
     label: "PgAdmin"
-    login: "[ADMIN_EMAIL]"
-    password: "[ADMIN_PASSWORD]"
-  - url: "https://[CI_CD_DOMAIN]:5443"
-    label: "Temporal UI"
     login: "[ADMIN_EMAIL]"
     password: "[ADMIN_PASSWORD]"

@@ -1,7 +1,7 @@
 #set env vars
 set -o allexport; source .env; set +o allexport;
 
-sleep 150s;
+sleep 180s;
 
 target=$(docker-compose port web 8000)
 
