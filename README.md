@@ -8,12 +8,16 @@ Deploy Posthog server with CI/CD on Elestio
 <br/>
 <br/>
 
+# Important
+
+once deployed, you will receive a verification email. Click on the link to activate your account.
+
 # Once deployed ...
 
 You can can open Posthog here:
 
     URL: https://[CI_CD_DOMAIN]
-    Login: root
+    Login: [ADMIN_EMAIL]
     password: [ADMIN_PASSWORD]
 
 You can open pgAdmin web UI here:
