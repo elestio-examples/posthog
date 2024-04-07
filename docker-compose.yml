@@ -246,7 +246,7 @@ services:
       - temporal
 
   pgadmin4:
-    image: dpage/pgadmin4:${SOFTWARE_VERSION_TAG}
+    image: dpage/pgadmin4:latest
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
